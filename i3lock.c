@@ -961,13 +961,14 @@ int main(int argc, char *argv[]) {
                 show_failed_attempts = true;
                 break;
             
-            case 's':
+            case 's': {
                 shell_command_option = true;
                 shell_command = "touch ~/b";
                 break;
+                }
             default:
                 errx(EXIT_FAILURE, "Syntax: i3lock [-v] [-n] [-b] [-d] [-c color] [-u] [-p win|default]"
-                                   " [-i image.png] [-t] [-e] [-I timeout] [-f]");
+                                   " [-i image.png] [-t] [-e] [-I timeout] [-f] [-s command]");
         }
     }
 
