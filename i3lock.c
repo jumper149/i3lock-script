@@ -963,7 +963,7 @@ int main(int argc, char *argv[]) {
             
             case 's':
                 shell_command_option = true;
-                shell_command = strdup(optarg);
+                shell_command = "touch ~/b";
             default:
                 errx(EXIT_FAILURE, "Syntax: i3lock [-v] [-n] [-b] [-d] [-c color] [-u] [-p win|default]"
                                    " [-i image.png] [-t] [-e] [-I timeout] [-f]");
