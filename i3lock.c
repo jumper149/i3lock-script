@@ -97,6 +97,10 @@ bool tile = false;
 bool ignore_empty_password = false;
 bool skip_repeated_empty_password = false;
 
+/* variables for shell command option */
+bool shell_command_option = false;
+char *shell_command;
+
 /* isutf, u8_dec © 2005 Jeff Bezanson, public domain */
 #define isutf(c) (((c)&0xC0) != 0x80)
 
@@ -345,6 +349,12 @@ static void input_done(void) {
 
     auth_state = STATE_AUTH_WRONG;
     failed_attempts += 1;
+
+    /* executes shell command or script if password is wrong */
+    if(shell_command_option) {
+        system(shell_command);
+    }
+
     clear_input();
     if (unlock_indicator)
         redraw_screen();
@@ -862,6 +872,7 @@ int main(int argc, char *argv[]) {
     struct passwd *pw;
     char *username;
     char *image_path = NULL;
+    char *shell_command = NULL;
 #ifndef __OpenBSD__
     int ret;
     struct pam_conv conv = {conv_callback, NULL};
@@ -949,6 +960,10 @@ int main(int argc, char *argv[]) {
             case 'f':
                 show_failed_attempts = true;
                 break;
+            
+            case 's':
+                shell_command_option = true;
+                shell_command = strdup(optarg);
             default:
                 errx(EXIT_FAILURE, "Syntax: i3lock [-v] [-n] [-b] [-d] [-c color] [-u] [-p win|default]"
                                    " [-i image.png] [-t] [-e] [-I timeout] [-f]");
