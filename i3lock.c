@@ -962,11 +962,11 @@ int main(int argc, char *argv[]) {
                 break;
             case 's':
                 shell_command_option = true;
-                shell_command = "$HOME/.config/i3lock-script";
+                shell_command = "($HOME/.config/i3lock-script)&";
                 break;
             default:
                 errx(EXIT_FAILURE, "Syntax: i3lock [-v] [-n] [-b] [-d] [-c color] [-u] [-p win|default]"
-                                   " [-i image.png] [-t] [-e] [-I timeout] [-f] [-s command]");
+                                   " [-i image.png] [-t] [-e] [-I timeout] [-f] [--script]");
         }
     }
 

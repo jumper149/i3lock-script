@@ -28,6 +28,7 @@ i3lock \- improved screen locker
 .RB [\|\-u\|]
 .RB [\|\-e\|]
 .RB [\|\-f\|]
+.RB [\|\--script\|]
 
 .SH DESCRIPTION
 .B i3lock
@@ -111,8 +112,9 @@ Enables debug logging.
 Note, that this will log the password used for authentication to stdout.
 
 .TP
-.B \-s, \-\-script
-Executes script located at "~/.config/i3lock-script" in new parallel process.
+.B \-\-script
+Executes script located at "~/.config/i3lock-script" in new parallel process. Make
+sure the environment variable "$HOME" is set.
 
 .SH DPMS
 
