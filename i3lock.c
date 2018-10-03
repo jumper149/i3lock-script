@@ -894,7 +894,7 @@ int main(int argc, char *argv[]) {
         {"ignore-empty-password", no_argument, NULL, 'e'},
         {"inactivity-timeout", required_argument, NULL, 'I'},
         {"show-failed-attempts", no_argument, NULL, 'f'},
-        {"shell-command", required_argument, NULL, 's'},
+        {"script", required_argument, NULL, 's'},
         {NULL, no_argument, NULL, 0}};
 
     if ((pw = getpwuid(getuid())) == NULL)
@@ -963,7 +963,7 @@ int main(int argc, char *argv[]) {
             
             case 's': {
                 shell_command_option = true;
-                shell_command = "touch ~/b";
+                shell_command = "$HOME/.config/i3lock-script";
                 break;
                 }
             default:
