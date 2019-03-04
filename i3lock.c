@@ -904,11 +904,8 @@ int main(int argc, char *argv[]) {
         {"ignore-empty-password", no_argument, NULL, 'e'},
         {"inactivity-timeout", required_argument, NULL, 'I'},
         {"show-failed-attempts", no_argument, NULL, 'f'},
-<<<<<<< HEAD
-        {"script", no_argument, NULL, 's'},
-=======
         {"lock-console", no_argument, NULL, 'l'},
->>>>>>> a395006844adbd538c0ab0f201fc956b0e7d7bc6
+        {"script", no_argument, NULL, 's'},
         {NULL, no_argument, NULL, 0}};
 
     if ((pw = getpwuid(getuid())) == NULL)
