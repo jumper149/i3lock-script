@@ -40,6 +40,11 @@
 #endif
 #include <xcb/xcb_aux.h>
 #include <xcb/randr.h>
+#if defined(__linux__)
+#include <fcntl.h>
+#include <linux/vt.h>
+#include <sys/ioctl.h>
+#endif
 
 #include "i3lock.h"
 #include "xcb.h"
@@ -755,7 +760,7 @@ static void xcb_check_cb(EV_P_ ev_check *w, int revents) {
     xcb_generic_event_t *event;
 
     if (xcb_connection_has_error(conn))
-        errx(EXIT_FAILURE, "X11 connection broke, did your server terminate?\n");
+        errx(EXIT_FAILURE, "X11 connection broke, did your server terminate?");
 
     while ((event = xcb_poll_for_event(conn)) != NULL) {
         if (event->response_type == 0) {
@@ -825,7 +830,7 @@ static void raise_loop(xcb_window_t window) {
     int screens;
 
     if (xcb_connection_has_error((conn = xcb_connect(NULL, &screens))) > 0)
-        errx(EXIT_FAILURE, "Cannot open display\n");
+        errx(EXIT_FAILURE, "Cannot open display");
 
     /* We need to know about the window being obscured or getting destroyed. */
     xcb_change_window_attributes(conn, window, XCB_CW_EVENT_MASK,
@@ -876,6 +881,11 @@ int main(int argc, char *argv[]) {
     int ret;
     struct pam_conv conv = {conv_callback, NULL};
 #endif
+#if defined(__linux__)
+    bool lock_tty_switching = false;
+    int term = -1;
+#endif
+
     int curs_choice = CURS_NONE;
     int o;
     int longoptind = 0;
@@ -894,15 +904,19 @@ int main(int argc, char *argv[]) {
         {"ignore-empty-password", no_argument, NULL, 'e'},
         {"inactivity-timeout", required_argument, NULL, 'I'},
         {"show-failed-attempts", no_argument, NULL, 'f'},
+<<<<<<< HEAD
         {"script", no_argument, NULL, 's'},
+=======
+        {"lock-console", no_argument, NULL, 'l'},
+>>>>>>> a395006844adbd538c0ab0f201fc956b0e7d7bc6
         {NULL, no_argument, NULL, 0}};
 
     if ((pw = getpwuid(getuid())) == NULL)
         err(EXIT_FAILURE, "getpwuid() failed");
     if ((username = pw->pw_name) == NULL)
-        errx(EXIT_FAILURE, "pw->pw_name is NULL.\n");
+        errx(EXIT_FAILURE, "pw->pw_name is NULL.");
 
-    char *optstring = "hvnbdc:p:ui:teI:f";
+    char *optstring = "hvnbdc:p:ui:teI:fl";
     while ((o = getopt_long(argc, argv, optstring, longopts, &longoptind)) != -1) {
         switch (o) {
             case 'v':
@@ -928,7 +942,7 @@ int main(int argc, char *argv[]) {
                     arg++;
 
                 if (strlen(arg) != 6 || sscanf(arg, "%06[0-9a-fA-F]", color) != 1)
-                    errx(EXIT_FAILURE, "color is invalid, it must be given in 3-byte hexadecimal format: rrggbb\n");
+                    errx(EXIT_FAILURE, "color is invalid, it must be given in 3-byte hexadecimal format: rrggbb");
 
                 break;
             }
@@ -947,7 +961,7 @@ int main(int argc, char *argv[]) {
                 } else if (!strcmp(optarg, "default")) {
                     curs_choice = CURS_DEFAULT;
                 } else {
-                    errx(EXIT_FAILURE, "i3lock: Invalid pointer type given. Expected one of \"win\" or \"default\".\n");
+                    errx(EXIT_FAILURE, "i3lock: Invalid pointer type given. Expected one of \"win\" or \"default\".");
                 }
                 break;
             case 'e':
@@ -960,13 +974,20 @@ int main(int argc, char *argv[]) {
             case 'f':
                 show_failed_attempts = true;
                 break;
+            case 'l':
+#if defined(__linux__)
+                lock_tty_switching = true;
+#else
+                errx(EXIT_FAILURE, "TTY switch locking is only supported on Linux.");
+#endif
+                break;
             case 's':
                 shell_command_option = true;
                 shell_command = "($HOME/.config/i3lock-script)&";
                 break;
             default:
                 errx(EXIT_FAILURE, "Syntax: i3lock [-v] [-n] [-b] [-d] [-c color] [-u] [-p win|default]"
-                                   " [-i image.png] [-t] [-e] [-I timeout] [-f] [--script]");
+                                   " [-i image.png] [-t] [-e] [-I timeout] [-f] [-l] [--script]");
         }
     }
 
@@ -1130,7 +1151,22 @@ int main(int argc, char *argv[]) {
     /* Initialize the libev event loop. */
     main_loop = EV_DEFAULT;
     if (main_loop == NULL)
-        errx(EXIT_FAILURE, "Could not initialize libev. Bad LIBEV_FLAGS?\n");
+        errx(EXIT_FAILURE, "Could not initialize libev. Bad LIBEV_FLAGS?");
+
+#if defined(__linux__)
+
+    /* Lock tty switching */
+    if (lock_tty_switching) {
+        if ((term = open("/dev/console", O_RDWR)) == -1) {
+            perror("error locking TTY switching: opening console failed");
+        }
+
+        if (term != -1 && (ioctl(term, VT_LOCKSWITCH)) == -1) {
+            perror("error locking TTY switching: locking console failed");
+        }
+    }
+
+#endif
 
     /* Explicitly call the screen redraw in case "locking…" message was displayed */
     auth_state = STATE_AUTH_IDLE;
@@ -1158,6 +1194,18 @@ int main(int argc, char *argv[]) {
     if (stolen_focus == XCB_NONE) {
         return 0;
     }
+
+#if defined(__linux__)
+    /* Restore tty switching */
+    if (lock_tty_switching) {
+        if (term != -1 && (ioctl(term, VT_UNLOCKSWITCH)) == -1) {
+            perror("error unlocking TTY switching: unlocking console failed");
+        }
+
+        close(term);
+    }
+
+#endif
 
     DEBUG("restoring focus to X11 window 0x%08x\n", stolen_focus);
     xcb_ungrab_pointer(conn, XCB_CURRENT_TIME);
