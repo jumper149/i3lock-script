@@ -6,6 +6,8 @@ This fork adds the option to execute a script on failed authorization:
 
 Make sure you have an executable located at `~/.config/i3lock-script`.
 
+I am maintaining an [AUR-Package](https://aur.archlinux.org/packages/i3lock-script/).
+
 i3lock - improved screen locker
 ===============================
 i3lock is a simple screen locker like slock. After starting it, you will
