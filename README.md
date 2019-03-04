@@ -1,3 +1,11 @@
+i3lock-script
+-------------
+This fork adds the option to execute a script on failed authorization:
+
+    i3lock --script
+
+Make sure you have an executable located at `~/.config/i3lock-script`.
+
 i3lock - improved screen locker
 ===============================
 i3lock is a simple screen locker like slock. After starting it, you will
