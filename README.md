@@ -1,5 +1,8 @@
 i3lock-script
 -------------
+
+**This fork is now unmaintained!**
+
 This fork adds the option to execute a script on failed authorization:
 
     i3lock --script
